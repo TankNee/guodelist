@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Guodelist — 把待办写成文档，把日历变成画板</title>
+<meta name="description" content="Guodelist 是一个用 Tauri + React 做的桌面待办应用：Superlist 式的三栏、所见即所得的 Markdown 笔记、按时间段排布的周/日视图，还有一个能贴在桌面上的日历画板。" />
+<style>
+  :root{
+    --cream:#fff6e8; --cream2:#fffdf7; --line:#f0dfc4; --ink:#4a3623; --ink2:#7a6248; --ink3:#a18a6b;
+    --brand:#f2915f; --brand-ink:#b8572f; --star:#f6c453; --mint:#ddf3e4; --sky:#dcedff; --rose:#ffe0e9;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--cream); color:var(--ink);
+    font-family:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.02em}
+  .brand svg{color:var(--star)}
+  nav{display:flex;gap:20px;font-size:13.5px;color:var(--ink2)}
+  nav a{text-decoration:none}
+  nav a:hover{color:var(--ink)}
+
+  .hero{padding:54px 0 26px;text-align:center;position:relative}
+  .hero h1{font-size:clamp(34px,5.2vw,58px);line-height:1.08;letter-spacing:-.04em;margin:0 0 16px}
+  .hero h1 em{font-style:normal;color:var(--brand-ink)}
+  .hero p{max-width:620px;margin:0 auto 26px;color:var(--ink2);font-size:16px}
+  .cta{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;text-decoration:none;font-weight:600;font-size:14px;transition:transform .15s ease, filter .15s ease}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:var(--brand);color:#fff;box-shadow:0 8px 20px rgba(242,145,95,.28)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .meta{margin-top:14px;font-size:12px;color:var(--ink3)}
+
+  .mock{margin:44px auto 0;max-width:900px;border-radius:18px;background:var(--cream2);border:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(74,54,35,.35);overflow:hidden;text-align:left}
+  .mock .bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#fffaf0}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .mock .body{display:grid;grid-template-columns:190px 1fr 240px;min-height:320px}
+  .side{border-right:1px solid var(--line);padding:14px 12px;font-size:12.5px;color:var(--ink2);background:#fffcf5}
+  .side .row{display:flex;justify-content:space-between;padding:7px 8px;border-radius:8px}
+  .side .row.on{background:#fff1dc;color:var(--ink);font-weight:600}
+  .main{padding:16px 18px}
+  .main h3{margin:2px 0 12px;font-size:24px;letter-spacing:-.03em}
+  .task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed #f2e4cc;font-size:13px}
+  .task:last-child{border:0}
+  .box{width:15px;height:15px;border-radius:50%;border:1.5px solid #d9c6a6;flex:none;margin-top:2px}
+  .task small{display:block;color:var(--ink3);font-size:11px;margin-top:2px}
+  .detail{border-left:1px solid var(--line);padding:14px;background:#fffcf5;font-size:12px;color:var(--ink2)}
+  .chip{display:inline-block;padding:3px 9px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:10.5px;margin:0 4px 5px 0;color:var(--ink2)}
+  .note{margin-top:10px;line-height:1.6}
+
+  section{padding:56px 0 8px}
+  h2{font-size:26px;letter-spacing:-.03em;margin:0 0 6px;text-align:center}
+  .sub{text-align:center;color:var(--ink2);font-size:14px;margin:0 auto 28px;max-width:560px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .card{background:var(--cream2);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card .num{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--ink3);margin-bottom:12px}
+  .card h3{margin:0 0 6px;font-size:15px;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--ink2);font-size:13px}
+
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .shot{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .shot .ph{
+    height:168px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
+    padding:16px;background:#f8f4ec;border-bottom:1px solid var(--line);
+  }
+  .shot .ph.week{background:#f5f1e9}
+  .shot .ph.board{background:#f3eee5}
+  .ph-title{font-size:13px;font-weight:600;color:var(--ink2)}
+  .ph-sub{font-size:11px;color:var(--ink3)}
+  .shot figcaption{padding:10px 13px;font-size:12px;color:var(--ink2)}
+
+  .stack{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--ink3)}
+  .stack span{border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fffaf1}
+
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;font-size:12px;color:var(--ink3)}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  footer a{text-decoration:none}
+  footer a:hover{color:var(--ink)}
+  @media (max-width:760px){
+    .mock .body{grid-template-columns:1fr}
+    .side,.detail{display:none}
+    nav{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 3.4l3.4 7.3 8 .9-5.9 5.5 1.7 8-7.2-4.1-7.2 4.1 1.7-8-5.9-5.5 8-.9z" fill="currentColor" stroke="rgba(74,54,35,.14)" stroke-width=".8" stroke-linejoin="round"/>
+        <circle cx="13.1" cy="15" r="1.15" fill="#4A3623"/><circle cx="18.9" cy="15" r="1.15" fill="#4A3623"/>
+        <circle cx="10.7" cy="17.5" r="1.2" fill="#F49CA8" opacity=".75"/><circle cx="21.3" cy="17.5" r="1.2" fill="#F49CA8" opacity=".75"/>
+        <path d="M14.4 18.3c.6.7 1.5.7 2.1 0" stroke="#4A3623" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      Guodelist
+    </div>
+    <nav>
+      <a href="#features">功能</a>
+      <a href="#shots">截图</a>
+      <a href="#stack">技术栈</a>
+      <a href="https://github.com/your-account/guodelist">源码</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>把待办写成文档<br />把日历变成<em>桌面画板</em></h1>
+    <p>Guodelist 是一个用 Tauri + React 做的桌面待办应用。Superlist 式的三栏、所见即所得的 Markdown 笔记、按时间段排布的周/日视图，还有一个能贴在桌面上的日历画板。</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/your-account/guodelist/releases">下载 Windows 版</a>
+      <a class="btn ghost" href="https://github.com/your-account/guodelist">浏览源码</a>
+    </div>
+    <div class="meta">Tauri 2 · React 19 · 本地优先 · 安装包约 2.3 MB</div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="bar">
+        <span class="dot" style="background:#f2915f"></span>
+        <span class="dot" style="background:#f6c453"></span>
+        <span class="dot" style="background:#a8d8b9"></span>
+      </div>
+      <div class="body">
+        <div class="side">
+          <div class="row on"><span>今天</span><span>8</span></div>
+          <div class="row"><span>日历</span><span></span></div>
+          <div class="row"><span>收件箱</span><span>2</span></div>
+          <div class="row"><span>全部任务</span><span></span></div>
+          <div class="row"><span>已完成</span><span></span></div>
+          <div class="row" style="margin-top:12px;color:var(--ink3);font-size:11px"><span>项目</span></div>
+          <div class="row"><span>房屋维修</span><span>4</span></div>
+          <div class="row"><span>Krem</span><span>2</span></div>
+        </div>
+        <div class="main">
+          <h3>今天</h3>
+          <div class="task"><span class="box"></span><div>每日同步<small>今天 10:00 – 10:30 · Krem</small></div></div>
+          <div class="task"><span class="box"></span><div>授权会议<small>今天 13:30 – 14:30 · 房屋维修 · 高</small></div></div>
+          <div class="task"><span class="box"></span><div>整理报价对比表<small>今天 15:00 – 16:30 · 房屋维修</small></div></div>
+          <div class="task"><span class="box"></span><div>查看双层窗报价<small>今天 · 房屋维修 · 高</small></div></div>
+        </div>
+        <div class="detail">
+          <div><span class="chip">房屋维修</span><span class="chip">今天 13:30–14:30</span><span class="chip">高</span></div>
+          <div class="note"><strong>Evergreen Window Co.</strong> — 报价 $4,850<br />更换 6 扇现有窗户为节能双层乙烯基窗，含拆除、安装、密封与旧窗清运。<br /><br /><strong>Clearview Home Solutions</strong> — 报价 $6,240<br />安装 8 扇 Low-E 玻璃双层窗，含保温窗框与 10 年安装质保。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="features">
+    <h2>它想解决的事</h2>
+    <p class="sub">大部分待办应用把「任务」和「资料」分开，Guodelist 把两者放回同一个地方。</p>
+    <div class="grid">
+      <div class="card"><span class="num">01</span><h3>任务即文档</h3><p>每条任务都有富文本备注：Markdown 即时渲染、子任务、附件、评论，报价单和会议记录都能挂在任务上。</p></div>
+      <div class="card"><span class="num">02</span><h3>按时间段排的日历</h3><p>任务有开始和结束时间，周视图按真实时长画成色块，重叠自动分栏——和苹果日历一样的读法。</p></div>
+      <div class="card"><span class="num">03</span><h3>桌面日历画板</h3><p>独立窗口贴在桌面下层，不抢焦点、不进任务栏，月/周/日三种视图随时切换，还能锁定成只读。</p></div>
+      <div class="card"><span class="num">04</span><h3>两套主题</h3><p>经典暖灰，或者星星人的奶油糖果色；明暗模式独立切换，日历色板跟着一起换。</p></div>
+      <div class="card"><span class="num">05</span><h3>本地优先，登录即同步</h3><p>不登录时数据只在本机，断网也能用；登录后按更新时间与云端双向合并，删除也不会复活。</p></div>
+      <div class="card"><span class="num">06</span><h3>重复任务</h3><p>每天、每个工作日、每周、每月；勾选完成后自动滚出下一次。</p></div>
+    </div>
+  </section>
+
+  <section id="shots">
+    <h2>界面</h2>
+    <p class="sub">暖灰画布、米白面板，朱红只出现在「选中 / 今天 / 进行中」。</p>
+    <div class="shots">
+      <figure class="shot">
+        <div class="ph"><span class="ph-title">清单 · 任务 · 详情</span><span class="ph-sub">三栏布局，详情里是文档式备注</span></div>
+        <figcaption>三栏任务列表 + 文档式详情</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="ph week"><span class="ph-title">周视图</span><span class="ph-sub">按 09:00–18:00 排布的时间网格</span></div>
+        <figcaption>按开始–结束时间画的色块</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="ph board"><span class="ph-title">桌面画板</span><span class="ph-sub">月 / 周 / 日，可锁定只读</span></div>
+        <figcaption>贴在桌面上的日历画板</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>技术栈</h2>
+    <p class="sub">桌面端和界面都在这个仓库里，欢迎自己编译。</p>
+    <div class="stack">
+      <span>Tauri 2</span><span>React 19</span><span>TypeScript</span><span>Tailwind CSS 4</span><span>shadcn/ui</span><span>zustand</span><span>Tiptap</span><span>dnd-kit</span><span>date-fns</span>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Guodelist · 一个 Superlist 风格的桌面待办实验</span>
+      <a href="https://github.com/your-account/guodelist">GitHub 仓库</a>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
