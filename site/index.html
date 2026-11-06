@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Guodelist — 把一天，放回一个安静的地方</title>
+<meta name="description" content="Guodelist 把待办、笔记和日历放回同一张画布。Windows 与 Android，本地优先，登录即同步。" />
+<meta name="theme-color" content="#f7f2e8" />
+<link rel="canonical" href="https://guodelist.neeto.cn/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://guodelist.neeto.cn/" />
+<meta property="og:title" content="Guodelist — 把一天，放回一个安静的地方" />
+<meta property="og:description" content="待办、笔记、日历，在同一张画布上。Windows 与 Android。" />
+<meta property="og:image" content="https://guodelist.neeto.cn/assets/desktop-today.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23f2915f'/%3E%3Cpath d='M16 6.4l2.9 6.2 6.8.8-5 4.7 1.4 6.8-6.1-3.5-6.1 3.5 1.4-6.8-5-4.7 6.8-.8z' fill='%23fff6e8'/%3E%3C/svg%3E" />
+<script>document.documentElement.classList.add("js");</script>
+<style>
+  :root{
+    --paper:#f7f2e8;
+    --paper-2:#fffaf0;
+    --paper-3:#efe7d8;
+    --ink:#211a13;
+    --ink-2:#54493d;
+    --muted:#7c6f60;
+    --line:rgba(52,39,26,.13);
+    --line-strong:rgba(52,39,26,.22);
+    --accent:#e7663c;
+    --accent-soft:#f6b28f;
+    --gold:#f0c35c;
+    --sage:#d7e6d6;
+    --night:#171410;
+    --night-2:#211c16;
+    --night-line:rgba(255,246,232,.13);
+    --ease:cubic-bezier(.22,1,.36,1);
+    --max:1240px;
+    --radius:28px;
+    --shadow-window:0 70px 140px -60px rgba(57,39,22,.5), 0 24px 60px -36px rgba(57,39,22,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI Variable Display","Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    line-height:1.55;
+    overflow-x:hidden;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:100;
+    pointer-events:none;
+    opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:var(--accent);color:#fff}
+  a{color:inherit}
+  img{max-width:100%;display:block}
+  h1,h2,h3,p{margin-top:0}
+  .wrap{width:min(calc(100% - 48px),var(--max));margin-inline:auto}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  /* ---------- header ---------- */
+  .site-header{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:80;
+    background:rgba(247,242,232,.76);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
+    backdrop-filter:blur(22px) saturate(150%);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s ease, background .3s ease;
+  }
+  .site-header.scrolled{border-bottom-color:var(--line);background:rgba(247,242,232,.9)}
+  .nav{height:66px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:650;letter-spacing:-.025em;font-size:16px}
+  .brand-mark{width:28px;height:28px;border-radius:9px;background:var(--accent);display:grid;place-items:center;box-shadow:0 5px 12px -6px rgba(231,102,60,.65)}
+  .brand-mark svg{width:18px;height:18px}
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:13.5px;color:var(--ink-2)}
+  .nav-links a{text-decoration:none;transition:color .2s ease}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-cta{height:36px;padding:0 17px;border-radius:999px;background:var(--ink);color:#fff!important;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;letter-spacing:-.01em;transition:transform .2s var(--ease),background .2s}
+  .nav-cta:hover{transform:translateY(-1px);background:#000}
+  .nav-cta .arrow{transition:transform .2s var(--ease)}
+  .nav-cta:hover .arrow{transform:translateX(2px)}
+  .mobile-only{display:none}
+  .menu-toggle{
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--line-strong);background:rgba(255,255,255,.55);
+    align-items:center;justify-content:center;flex-direction:column;gap:4px;
+    cursor:pointer;padding:0;
+  }
+  .menu-toggle span{display:block;width:14px;height:1.5px;border-radius:2px;background:var(--ink);transition:transform .25s var(--ease),opacity .2s}
+  .menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(2.75px) rotate(45deg)}
+  .menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-2.75px) rotate(-45deg)}
+  .mobile-menu{
+    position:fixed;top:66px;left:0;right:0;z-index:79;
+    padding:12px 16px 18px;
+    background:rgba(247,242,232,.97);
+    -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+    border-bottom:1px solid var(--line);
+    display:none;flex-direction:column;
+    transform:translateY(-8px);opacity:0;pointer-events:none;
+    transition:opacity .2s ease,transform .3s var(--ease);
+  }
+  .mobile-menu.open{display:flex;opacity:1;transform:none;pointer-events:auto}
+  .mobile-menu a{padding:12px 4px;text-decoration:none;font-size:15px;color:var(--ink-2);border-bottom:1px solid var(--line)}
+  .mobile-menu a:last-child{border-bottom:0;color:var(--ink);font-weight:600}
+  .mobile-menu .menu-download{margin-top:8px;padding:13px 16px;border-radius:12px;background:var(--ink);color:#fff;text-align:center;border:0}
+  .mobile-menu a.menu-download{color:#fff;border-bottom:0}
+
+  /* ---------- shared type ---------- */
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    margin:0 0 18px;
+    font-size:11px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+  }
+  .kicker::before{content:"";width:16px;height:1px;background:currentColor;opacity:.65}
+  .h2{
+    font-size:clamp(38px,5.2vw,68px);
+    line-height:1.04;
+    letter-spacing:-.045em;
+    font-weight:650;
+    margin:0;
+    text-wrap:balance;
+  }
+  .h2 .soft{color:var(--muted);font-weight:540}
+  .lede{font-size:clamp(16px,1.8vw,19px);line-height:1.7;color:var(--ink-2);text-wrap:pretty}
+  .section{padding:clamp(90px,12vw,150px) 0}
+  .section-head{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(30px,7vw,90px);align-items:end;margin-bottom:clamp(44px,6vw,72px)}
+  .section-head .lede{max-width:430px;margin:0 0 4px auto}
+  .center-head{text-align:center;max-width:780px;margin:0 auto clamp(44px,6vw,72px)}
+  .center-head .lede{max-width:620px;margin:18px auto 0}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    height:50px;padding:0 23px;border-radius:999px;
+    text-decoration:none;font-size:14.5px;font-weight:620;letter-spacing:-.012em;
+    transition:transform .25s var(--ease),box-shadow .25s var(--ease),background .25s;
+    will-change:transform;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(0)}
+  .btn .arrow{transition:transform .25s var(--ease)}
+  .btn:hover .arrow{transform:translateX(3px)}
+  .btn-dark{background:var(--ink);color:#fff;box-shadow:0 14px 30px -18px rgba(33,26,19,.7)}
+  .btn-dark:hover{box-shadow:0 20px 36px -18px rgba(33,26,19,.8)}
+  .btn-light{background:rgba(255,255,255,.62);border:1px solid var(--line-strong);color:var(--ink);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .btn-light:hover{background:#fff}
+  .btn-ghost{height:44px;padding:0 4px;color:var(--ink-2);font-size:13px}
+  .btn-ghost:hover{color:var(--ink);transform:none}
+  .btn svg{flex:none}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:clamp(126px,16vh,176px) 0 40px;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";position:absolute;z-index:-1;top:-18%;left:50%;transform:translateX(-50%);
+    width:1200px;height:900px;border-radius:50%;
+    background:
+      radial-gradient(ellipse at 48% 42%,rgba(246,178,143,.38),transparent 54%),
+      radial-gradient(ellipse at 70% 30%,rgba(240,195,92,.28),transparent 45%),
+      radial-gradient(ellipse at 30% 62%,rgba(215,230,214,.45),transparent 48%);
+    filter:blur(30px);
+    pointer-events:none;
+  }
+  .hero-copy{max-width:980px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    margin:0 0 30px;padding:7px 13px;
+    border:1px solid var(--line);border-radius:999px;
+    background:rgba(255,250,240,.62);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--ink-2);
+  }
+  .eyebrow .ping{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(231,102,60,.13)}
+  .hero h1{
+    font-size:clamp(50px,8vw,100px);
+    line-height:.94;
+    letter-spacing:-.062em;
+    font-weight:650;
+    margin:0 0 30px;
+    text-wrap:balance;
+  }
+  .hero h1 .accent{
+    display: inline-block;
+    background:linear-gradient(105deg,#c94b24 4%,#e7663c 46%,#f19a63 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    padding-bottom:.04em;
+  }
+  .hero .lede{max-width:650px;margin:0 auto 34px}
+  .hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+  .hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px;font-size:11.5px;color:var(--muted)}
+  .hero-meta i{width:3px;height:3px;background:var(--muted);border-radius:50%;opacity:.5}
+  .hero-visual{
+    position:relative;
+    width:min(1160px,100%);
+    margin:clamp(48px,7vw,78px) auto 0;
+    isolation:isolate;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) clamp(180px,18vw,240px);
+    gap:clamp(18px,2.8vw,34px);
+    align-items:end;
+  }
+  .hero-desktop{position:relative;min-width:0}
+  .hero-visual::before{
+    content:"";position:absolute;z-index:-1;inset:8% 2% -12%;
+    background:radial-gradient(ellipse at 50% 40%,rgba(231,102,60,.22),transparent 64%);
+    filter:blur(40px);
+  }
+  .window-frame{
+    position:relative;
+    background:#fff;
+    border:1px solid rgba(53,40,26,.16);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:var(--shadow-window);
+  }
+  .window-frame::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(118deg,rgba(255,255,255,.18),transparent 32%,transparent 68%,rgba(255,255,255,.08));
+    mix-blend-mode:screen;
+  }
+  .window-frame img{width:100%;height:auto}
+  .hero-phone{
+    position:relative;
+    width:100%;
+    z-index:4;
+    margin-bottom:5px;
+  }
+  .hero-caption{margin:32px 0 0;display:flex;justify-content:center;gap:22px;font-size:11px;color:var(--muted);letter-spacing:.02em}
+  .hero-film{
+    display:flex;align-items:center;gap:13px;
+    width:min(700px,100%);margin:26px auto 0;padding:9px 14px 9px 9px;
+    border:1px solid var(--line-strong);border-radius:18px;
+    background:rgba(255,250,240,.72);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    cursor:pointer;text-align:left;color:var(--ink);
+    transition:transform .3s var(--ease),background .3s,border-color .3s,box-shadow .3s;
+    box-shadow:0 18px 40px -30px rgba(57,39,22,.45);
+  }
+  .hero-film:hover{transform:translateY(-3px);background:rgba(255,252,246,.94);border-color:var(--line-strong);box-shadow:0 26px 52px -30px rgba(57,39,22,.55)}
+  .film-thumb{
+    position:relative;flex:none;width:104px;aspect-ratio:16/9;overflow:hidden;
+    border-radius:11px;background:#211a13;
+  }
+  .film-thumb img{width:100%;height:100%;object-fit:cover;opacity:.88;transition:transform .5s var(--ease)}
+  .hero-film:hover .film-thumb img{transform:scale(1.04)}
+  .film-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(23,20,16,.05),rgba(23,20,16,.34))}
+  .film-play{
+    position:absolute;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:30px;height:30px;border-radius:50%;background:rgba(255,248,238,.92);
+    display:grid;place-items:center;color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.2);
+    transition:transform .3s var(--ease);
+  }
+  .hero-film:hover .film-play{transform:translate(-50%,-50%) scale(1.08)}
+  .film-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .film-copy b{font-size:13px;font-weight:650;letter-spacing:-.015em}
+  .film-copy span{font-size:11px;color:var(--muted);letter-spacing:.01em}
+  .film-time{flex:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;padding-right:5px}
+
+  /* ---------- film modal ---------- */
+  .film-modal{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;
+    padding:28px;visibility:hidden;opacity:0;
+    background:rgba(19,15,11,0);
+    transition:opacity .35s ease,background .35s ease,visibility .35s;
+  }
+  .film-modal.open{visibility:visible;opacity:1;background:rgba(19,15,11,.82);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+  .film-backdrop{position:absolute;inset:0}
+  .film-dialog{
+    position:relative;z-index:2;width:min(1180px,94vw);
+    transform:translateY(16px) scale(.975);opacity:.5;
+    transition:transform .45s var(--ease),opacity .35s ease;
+  }
+  .film-modal.open .film-dialog{transform:none;opacity:1}
+  .film-dialog video{
+    width:100%;aspect-ratio:16/9;display:block;background:#000;
+    border-radius:20px;box-shadow:0 50px 110px -40px rgba(0,0,0,.85);
+    outline:none;
+  }
+  .film-close{
+    position:absolute;right:0;top:-48px;width:36px;height:36px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff7eb;
+    display:grid;place-items:center;cursor:pointer;font-size:20px;line-height:1;
+    transition:background .2s,transform .2s;
+  }
+  .film-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg)}
+  body.film-open{overflow:hidden}
+
+  /* ---------- phone ---------- */
+  .phone{
+    position:relative;
+    width:100%;
+    padding:0;
+    border-radius:clamp(20px,2.4vw,26px);
+    aspect-ratio:9 / 16;
+    overflow:hidden;
+    display:flex;
+    background:transparent;
+    border:1px solid rgba(57,39,22,.16);
+    box-shadow:0 34px 64px -30px rgba(48,34,18,.5),0 10px 24px -14px rgba(48,34,18,.3);
+  }
+  .phone::before,.phone::after{display:none}
+  .phone img{
+    width:100%;height:100%;object-fit:cover;border-radius:inherit;
+    position:relative;z-index:2;
+  }
+
+  /* ---------- manifesto ---------- */
+  .manifesto{padding:clamp(88px,12vw,140px) 0 clamp(60px,8vw,90px);text-align:center;position:relative}
+  .manifesto .h2{max-width:900px;margin:0 auto;font-size:clamp(42px,6.8vw,88px)}
+  .manifesto .lede{max-width:580px;margin:26px auto 0}
+  .manifesto line{display:block}
+  .manifesto-rule{width:1px;height:64px;background:linear-gradient(var(--line-strong),transparent);margin:56px auto 0}
+
+  /* ---------- desktop showcase ---------- */
+  .desktop-showcase{padding-top:clamp(30px,4vw,60px)}
+  .window-stage{position:relative;isolation:isolate}
+  .window-stage::before{
+    content:"";position:absolute;z-index:-1;left:8%;right:8%;bottom:-8%;height:40%;
+    background:radial-gradient(ellipse,rgba(231,102,60,.18),transparent 66%);filter:blur(46px);
+  }
+  .window-caption{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    margin:20px 4px 0;font-size:11.5px;color:var(--muted);
+  }
+  .window-caption span:last-child{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.04em}
+  .annotation-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:clamp(22px,3vw,34px)}
+  .annotation{
+    border-top:1px solid var(--line);padding-top:15px;
+    display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);
+  }
+  .annotation b{display:block;font-weight:620;color:var(--ink);font-size:13px;margin-bottom:2px}
+  .annotation .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--accent);padding-top:2px}
+
+  /* ---------- split feature ---------- */
+  .split{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(38px,7vw,100px);align-items:center}
+  .split.reverse{grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr)}
+  .split.reverse .split-copy{order:2}
+  .split.reverse .split-media{order:1}
+  .split-copy .h2{font-size:clamp(34px,4.6vw,58px);margin-bottom:22px}
+  .split-copy .lede{max-width:440px}
+  .ticks{list-style:none;padding:0;margin:30px 0 0;display:grid;gap:14px;max-width:440px}
+  .ticks li{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .ticks svg{flex:none;margin-top:2px;color:var(--accent)}
+  .ticks b{color:var(--ink);font-weight:620}
+  .split-media{position:relative}
+  .split-media .window-frame{transform:none;box-shadow:0 50px 100px -55px rgba(57,39,22,.55),0 16px 40px -26px rgba(57,39,22,.3)}
+  .split-media .window-frame:hover img{transform:scale(1.012)}
+  .window-frame img{transition:transform .8s var(--ease)}
+  .media-label{
+    display:inline-flex;align-items:center;gap:7px;margin-top:16px;
+    font-size:10.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;
+  }
+  .media-label::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+  /* ---------- board ---------- */
+  .board-feature{
+    margin-top:clamp(80px,11vw,140px);
+    display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:clamp(30px,6vw,80px);
+    align-items:center;
+    padding:clamp(30px,4.5vw,58px);
+    border-radius:36px;
+    background:linear-gradient(135deg,#eee5d5,#f9f3e7 48%,#e9dfce);
+    border:1px solid rgba(83,62,38,.12);
+    overflow:hidden;
+    position:relative;
+  }
+  .board-feature::after{
+    content:"";position:absolute;right:-120px;top:-140px;width:360px;height:360px;border-radius:50%;
+    background:radial-gradient(circle,rgba(231,102,60,.18),transparent 68%);
+  }
+  .board-copy{position:relative;z-index:2}
+  .board-copy h3{font-size:clamp(30px,3.6vw,44px);line-height:1.08;letter-spacing:-.04em;margin:0 0 16px;font-weight:650}
+  .board-copy p{color:var(--ink-2);font-size:14.5px;line-height:1.7;margin:0 0 22px;max-width:330px}
+  .board-media{position:relative;z-index:2}
+  .board-media .window-frame{border-radius:18px;transform:rotate(-.6deg);box-shadow:0 34px 70px -40px rgba(57,39,22,.55)}
+  .board-pill{
+    position:absolute;left:-12px;bottom:22px;z-index:4;
+    display:flex;align-items:center;gap:7px;
+    padding:8px 12px;border-radius:10px;background:rgba(33,26,19,.9);color:#f8f0e3;
+    font-size:10.5px;letter-spacing:.02em;box-shadow:0 14px 30px -18px rgba(0,0,0,.6);
+  }
+  .board-pill span{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+
+  /* ---------- mobile dark ---------- */
+  .mobile-showcase{
+    margin:clamp(72px,10vw,120px) 0;
+    background:
+      radial-gradient(ellipse at 78% 20%,rgba(231,102,60,.18),transparent 42%),
+      radial-gradient(ellipse at 20% 80%,rgba(240,195,92,.09),transparent 46%),
+      var(--night);
+    color:#f8f1e4;
+    border-radius:clamp(30px,4vw,52px);
+    padding:clamp(68px,9vw,118px) 0 clamp(54px,7vw,96px);
+    overflow:hidden;
+    position:relative;
+  }
+  .mobile-showcase::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:72px 72px;
+    mask-image:radial-gradient(ellipse at 50% 34%,#000,transparent 72%);
+  }
+  .mobile-showcase .wrap{position:relative;z-index:2}
+  .mobile-showcase .kicker{color:var(--accent-soft)}
+  .mobile-showcase .h2{color:#fbf5e9}
+  .mobile-showcase .h2 .soft{color:#b7aa98}
+  .mobile-showcase .lede{color:#b9ad9c}
+  .mobile-showcase .center-head .lede{max-width:560px}
+  .phone-stage{
+    display:flex;align-items:flex-end;justify-content:center;gap:clamp(14px,3vw,34px);
+    margin-top:clamp(50px,7vw,80px);
+    perspective:1600px;
+  }
+  .phone-item{margin:0;width:clamp(150px,20vw,230px);transition:transform .5s var(--ease)}
+  .phone-item .phone{box-shadow:0 54px 100px -42px rgba(0,0,0,.9),0 12px 26px -14px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.14)}
+  .phone-item.side{transform:translateY(30px) scale(.9)}
+  .phone-item.main{width:clamp(172px,23vw,264px);z-index:3;transform:translateY(-8px)}
+  .phone-item:hover{transform:translateY(-2px) scale(1.01);opacity:1}
+  .phone-item.side:hover{transform:translateY(22px) scale(.92)}
+  .phone-item figcaption{
+    text-align:center;margin-top:20px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9f9282;
+  }
+  .mobile-notes{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,3vw,32px);
+    margin-top:clamp(54px,7vw,84px);border-top:1px solid var(--night-line);padding-top:30px;
+  }
+  .mobile-note b{display:block;font-size:13px;color:#f4ecdf;margin-bottom:4px;font-weight:600}
+  .mobile-note span{display:block;font-size:12px;color:#9f9282;line-height:1.6}
+  .mobile-note .no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#d98863;display:block;margin-bottom:9px}
+
+  /* ---------- feature grid ---------- */
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .feature{
+    position:relative;min-height:236px;padding:26px;border-radius:24px;
+    background:rgba(255,250,240,.58);border:1px solid var(--line);
+    transition:transform .35s var(--ease),background .35s,border-color .35s;
+    overflow:hidden;
+  }
+  .feature:hover{transform:translateY(-4px);background:rgba(255,250,240,.9);border-color:var(--line-strong)}
+  .feature-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:42px}
+  .feature-icon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:rgba(231,102,60,.09);color:var(--accent)}
+  .feature-no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--muted);letter-spacing:.06em}
+  .feature h3{font-size:17px;letter-spacing:-.02em;margin:0 0 8px;font-weight:620}
+  .feature p{font-size:12.5px;line-height:1.65;color:var(--ink-2);margin:0;max-width:290px}
+  .feature.wide{grid-column:span 2}
+  .feature.dark{background:var(--night);border-color:var(--night);color:#f6efe3}
+  .feature.dark .feature-icon{background:rgba(255,255,255,.08);color:var(--gold)}
+  .feature.dark p{color:#a99c8b}
+  .feature.dark .feature-no{color:#867967}
+
+  /* ---------- principles ---------- */
+  .principles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
+  .principle{padding:30px;border-radius:24px;border:1px solid var(--line);background:var(--paper-2);display:grid;grid-template-columns:auto 1fr;gap:22px}
+  .principle .big{font-size:34px;line-height:1;letter-spacing:-.06em;font-weight:650;color:var(--accent);font-variant-numeric:tabular-nums}
+  .principle h3{font-size:16px;margin:0 0 5px;font-weight:620}
+  .principle p{font-size:12.5px;line-height:1.65;color:var(--ink-2);margin:0;max-width:360px}
+
+  /* ---------- download ---------- */
+  .download{padding:clamp(40px,6vw,80px) 0 clamp(80px,10vw,120px)}
+  .download-panel{
+    position:relative;border-radius:clamp(30px,4vw,48px);overflow:hidden;
+    background:
+      radial-gradient(ellipse at 82% 0%,rgba(231,102,60,.24),transparent 42%),
+      radial-gradient(ellipse at 8% 100%,rgba(240,195,92,.12),transparent 40%),
+      #1a1611;
+    color:#fbf4e7;padding:clamp(48px,7vw,86px);
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .download-panel::after{
+    content:"";position:absolute;right:-10%;top:-30%;width:520px;height:520px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.08);box-shadow:0 0 0 80px rgba(255,255,255,.018),0 0 0 160px rgba(255,255,255,.012);
+    pointer-events:none;
+  }
+  .download-panel .kicker{color:var(--accent-soft)}
+  .download-panel .h2{max-width:680px;color:#fff8ed}
+  .download-panel .lede{color:#b9ac9b;max-width:520px;margin-top:18px}
+  .platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:clamp(34px,5vw,52px);position:relative;z-index:2}
+  .platform-card{
+    display:block;text-decoration:none;padding:26px;border-radius:22px;
+    background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);
+    transition:transform .35s var(--ease),background .35s,border-color .35s;
+    position:relative;overflow:hidden;
+  }
+  .platform-card:hover{transform:translateY(-4px);background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2)}
+  .platform-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px}
+  .platform-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.1);display:grid;place-items:center;color:#fff3e3}
+  .platform-version{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#9f9282;letter-spacing:.04em}
+  .platform-card h3{font-size:22px;letter-spacing:-.03em;margin:0 0 5px;font-weight:620}
+  .platform-card p{font-size:12.5px;color:#a99c8b;margin:0 0 26px;line-height:1.55}
+  .platform-link{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:600;color:#f3c9b2}
+  .platform-link .arrow{transition:transform .3s var(--ease)}
+  .platform-card:hover .platform-link .arrow{transform:translateX(4px)}
+  .download-note{margin:24px 0 0;font-size:11px;color:#8f8271;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative;z-index:2}
+  .download-note i{width:3px;height:3px;border-radius:50%;background:#8f8271;opacity:.6}
+  .source-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:34px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;position:relative;z-index:2}
+  .source-row a{color:#c9bbaa;text-decoration:none;transition:color .2s}
+  .source-row a:hover{color:#fff}
+  .source-row .sep{width:1px;height:12px;background:rgba(255,255,255,.16)}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:32px 0 48px;font-size:11.5px;color:var(--muted)}
+  .footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:28px;flex-wrap:wrap}
+  .footer-brand{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--ink);font-size:13px}
+  .footer-brand .brand-mark{width:22px;height:22px;border-radius:7px}
+  .footer-brand .brand-mark svg{width:14px;height:14px}
+  .footer-links{display:flex;gap:22px;flex-wrap:wrap}
+  .footer-links a{text-decoration:none;transition:color .2s}
+  .footer-links a:hover{color:var(--ink)}
+  .footer-note{width:100%;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:10.5px;color:#9a8b79}
+
+  /* ---------- reveal ---------- */
+  .js .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .js .reveal.in{opacity:1;transform:none}
+  .js .reveal.delay-1{transition-delay:.08s}
+  .js .reveal.delay-2{transition-delay:.16s}
+  .js .reveal.delay-3{transition-delay:.24s}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+
+  @media (max-width:1000px){
+    .section-head{grid-template-columns:1fr;align-items:start}
+    .section-head .lede{margin:0;max-width:600px}
+    .split,.split.reverse{grid-template-columns:1fr}
+    .split.reverse .split-copy,.split.reverse .split-media{order:initial}
+    .split-copy .lede{max-width:620px}
+    .board-feature{grid-template-columns:1fr}
+    .board-copy p{max-width:520px}
+    .feature-grid{grid-template-columns:repeat(2,1fr)}
+    .feature.wide{grid-column:span 1}
+    .annotation-row{grid-template-columns:1fr;gap:0}
+    .annotation{padding:14px 0}
+    .mobile-notes{gap:18px}
+  }
+  @media (max-width:760px){
+    .wrap{width:min(calc(100% - 32px),var(--max))}
+    .nav-links{display:none}
+    .mobile-only{display:inline-flex}
+    .nav-cta{display:none}
+    .hero{padding-top:112px}
+    .hero h1{font-size:clamp(32px,9.3vw,52px);line-height:.98;letter-spacing:-.055em;text-wrap:wrap}
+    .hero h1 .accent{white-space:nowrap}
+    .hero-visual{grid-template-columns:1fr}
+    .hero-phone{display:none}
+    .hero-caption{flex-direction:column;gap:6px;align-items:center}
+    .hero-film{width:100%;margin-top:20px;padding:8px 10px 8px 8px;border-radius:15px;gap:10px}
+    .film-thumb{width:82px;border-radius:9px}
+    .film-copy b{font-size:12px}
+    .film-copy span{font-size:10px}
+    .film-time{font-size:9px;padding-right:2px}
+    .film-modal{padding:14px}
+    .film-close{right:0;top:-42px;width:32px;height:32px}
+    .film-dialog video{border-radius:14px}
+    .platform-grid{grid-template-columns:1fr}
+    .feature-grid,.principles{grid-template-columns:1fr}
+    .phone-stage{gap:6px}
+    .phone-item.side{display:none}
+    .phone-item.main{width:64vw;max-width:280px;transform:none}
+    .phone-item.main:hover{transform:translateY(-2px)}
+    .mobile-notes{grid-template-columns:1fr;gap:18px}
+    .download-panel{padding:38px 24px}
+    .board-feature{padding:26px 20px;border-radius:26px}
+    .board-pill{left:8px;bottom:10px}
+    .footer-note{flex-direction:column;gap:8px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .js .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="Guodelist 首页">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M16 3.8l3.3 7.1 7.8.9-5.8 5.3 1.6 7.8-6.9-4-6.9 4 1.6-7.8-5.8-5.3 7.8-.9z" fill="#fff6e8"/><circle cx="13.2" cy="15.1" r="1.1" fill="#b8572f"/><circle cx="18.8" cy="15.1" r="1.1" fill="#b8572f"/><path d="M14.4 18.2c.6.7 1.6.7 2.2 0" stroke="#b8572f" stroke-width="1.1" stroke-linecap="round"/></svg>
+      </span>
+      Guodelist
+    </a>
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#desktop">桌面端</a>
+      <a href="#android">Android</a>
+      <a href="#features">功能</a>
+      <a href="#download">下载</a>
+      <a href="https://github.com/TankNee/guodelist" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+    <a class="nav-cta" href="#download">获取 Guodelist <span class="arrow">↗</span></a>
+    <button class="menu-toggle mobile-only" id="menuToggle" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="mobileMenu">
+      <span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-menu" id="mobileMenu" aria-label="移动端导航">
+    <a href="#desktop">桌面端</a>
+    <a href="#android">Android</a>
+    <a href="#features">功能</a>
+    <a href="#download">下载</a>
+    <a href="https://github.com/TankNee/guodelist" target="_blank" rel="noreferrer">GitHub 源码 ↗</a>
+    <a class="menu-download" href="#download">获取 Guodelist</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="ping"></span> Windows + Android · 本地优先 · 开源</p>
+        <h1>把一天，<br><span class="accent">放回一个安静的地方。</span></h1>
+        <p class="lede">待办、笔记、日历，不再散落在三个应用里。Guodelist 把它们放回同一张画布——打开就知道今天该做什么，合上也不会忘记。</p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" href="https://github.com/TankNee/guodelist/releases/latest" target="_blank" rel="noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.6l7.4-1v7.1H3V5.6zm8.6-1.2L21 3v8.7h-9.4V4.4zM3 12.9h7.4v7.1L3 18.9v-6zm8.6 0H21V21l-9.4-1.3v-6.8z"/></svg>
+            下载 Windows 版 <span class="arrow">→</span>
+          </a>
+          <a class="btn btn-light" href="https://github.com/TankNee/guodelist-android/releases/latest" target="_blank" rel="noreferrer">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.1 8.6h9.8c.6 0 1.1.5 1.1 1.1v6.8c0 .6-.5 1.1-1.1 1.1H7.1c-.6 0-1.1-.5-1.1-1.1v-6.8c0-.6.5-1.1 1.1-1.1zm-3.2.1c.7 0 1.2.5 1.2 1.2v4.8a1.2 1.2 0 0 1-2.4 0v-4.8c0-.7.5-1.2 1.2-1.2zm16.2 0c.7 0 1.2.5 1.2 1.2v4.8a1.2 1.2 0 0 1-2.4 0v-4.8c0-.7.5-1.2 1.2-1.2zM8.5 17.2h7v5.1a1.3 1.3 0 0 1-2.6 0v-3.4h-1.8v3.4a1.3 1.3 0 0 1-2.6 0v-5.1zM8.2 7.3l-.9-1.7c-.1-.2 0-.4.2-.5.2-.1.4 0 .5.2l.9 1.7c.8-.3 1.7-.5 2.7-.5s2 .2 2.8.5l.9-1.7c.1-.2.3-.3.5-.2.2.1.3.3.2.5l-.9 1.7c1.4.6 2.3 1.7 2.4 3H5.8c.1-1.3 1-2.4 2.4-3zM9.6 6.1a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2zm4.8 0a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2z"/></svg>
+            下载 Android 版 <span class="arrow">→</span>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/TankNee/guodelist" target="_blank" rel="noreferrer">浏览源码 ↗</a>
+        </div>
+        <div class="hero-meta">
+          <span>Windows 10 / 11</span><i></i><span>Android 8+</span><i></i><span>免费开源</span><i></i><span>本地优先</span>
+        </div>
+        <button class="hero-film" type="button" data-film-open aria-label="播放 Guodelist 38 秒宣传片">
+          <span class="film-thumb">
+            <img src="https://guodelist.neeto.cn/media/guodelist-promo-poster.jpg?v=3" width="1920" height="1080" alt="" loading="lazy" />
+            <span class="film-play" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.7l7 4.3-7 4.3V1.7z"/></svg>
+            </span>
+          </span>
+          <span class="film-copy"><b>看 Guodelist 的 38 秒</b><span>真实界面 · 设计 · 理念</span></span>
+          <span class="film-time">0:38</span>
+        </button>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-desktop">
+          <figure class="window-frame" style="margin:0">
+            <img src="assets/desktop-today.png" width="1440" height="900" alt="Guodelist Windows 桌面端：左侧清单、中间任务列表、右侧文档式任务详情" fetchpriority="high" />
+          </figure>
+        </div>
+        <div class="hero-phone">
+          <div class="phone">
+            <img src="assets/android-today.png" width="1080" height="1920" alt="Guodelist Android 端 Today 页面" />
+          </div>
+        </div>
+      </div>
+      <p class="hero-caption"><span>Windows 桌面端</span><span>Android 移动端</span><span>同一份数据</span></p>
+    </div>
+  </section>
+
+  <section class="manifesto">
+    <div class="wrap">
+      <p class="kicker" style="justify-content:center">THE IDEA</p>
+      <h2 class="h2 reveal">不是更多功能，<br>是更少<span class="soft">切换。</span></h2>
+      <p class="lede reveal delay-1">大部分待办应用把「任务」和「资料」分开。Guodelist 把它们放回同一个地方——你不需要在清单、文档和日历之间来回搬运上下文。</p>
+      <div class="manifesto-rule" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="section desktop-showcase" id="desktop">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="reveal">
+          <p class="kicker">DESKTOP</p>
+          <h2 class="h2">桌面，应该像一张<br><span class="soft">摊开的纸。</span></h2>
+        </div>
+        <p class="lede reveal delay-1">三栏，不多不少。左边是今天，中间是任务，右边是它的全部上下文。没有弹窗追着你跑，也没有为了一个备注打开第二个应用。</p>
+      </div>
+
+      <div class="window-stage reveal">
+        <figure class="window-frame" style="margin:0">
+          <img src="assets/desktop-dark.png" width="1440" height="900" alt="Guodelist 桌面端深色三栏布局" />
+        </figure>
+        <div class="window-caption"><span>Guodelist for Windows · Dark</span><span>1440 × 900</span></div>
+      </div>
+
+      <div class="annotation-row">
+        <div class="annotation reveal"><span class="num">01</span><div><b>清单，是目录</b>项目、生活、收件箱，各自安静地待着。</div></div>
+        <div class="annotation reveal delay-1"><span class="num">02</span><div><b>任务，是正文</b>标题下面就是 Markdown 备注、子任务、附件和评论。</div></div>
+        <div class="annotation reveal delay-2"><span class="num">03</span><div><b>详情，不打断</b>右侧抽屉展开，不覆盖你正在看的那一行。</div></div>
+      </div>
+
+      <div class="split" style="margin-top:clamp(86px,12vw,150px)">
+        <div class="split-copy reveal">
+          <p class="kicker">CALENDAR</p>
+          <h2 class="h2">时间不是列表，<br><span class="soft">是长度。</span></h2>
+          <p class="lede">周视图按真实开始和结束时间画成色块。一个 90 分钟的会议，就应该占 90 分钟的位置。重叠的日程自动分栏，像苹果日历一样一眼读完。</p>
+          <ul class="ticks">
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.2 4L19 6.8"/></svg><span><b>按真实时长排布</b>，不是一行行等高的待办。</span></li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.2 4L19 6.8"/></svg><span><b>月 / 周 / 日</b>三种读法，随当天的心情切换。</span></li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.2 4L19 6.8"/></svg><span><b>任务与日程共用一份数据</b>，改一处，两边都对。</span></li>
+          </ul>
+        </div>
+        <figure class="split-media reveal delay-1" style="margin:0">
+          <div class="window-frame">
+            <img src="assets/desktop-calendar.png" width="1440" height="900" alt="Guodelist 周视图，按开始和结束时间排布的日历色块" />
+          </div>
+          <span class="media-label">Week view · 26 Oct — 1 Nov</span>
+        </figure>
+      </div>
+
+      <div class="board-feature reveal">
+        <div class="board-copy">
+          <p class="kicker">DESKTOP BOARD</p>
+          <h3>把日历，<br>贴在桌面上。</h3>
+          <p>独立窗口，贴在壁纸上方、应用下方。不抢焦点，不进任务栏。月、周、日随你切换，也可以锁成只读，让它安静地待着。</p>
+          <a class="btn btn-dark" style="height:42px;padding:0 18px;font-size:12.5px" href="https://github.com/TankNee/guodelist/releases/latest" target="_blank" rel="noreferrer">看看桌面画板 <span class="arrow">→</span></a>
+        </div>
+        <figure class="board-media" style="margin:0">
+          <div class="window-frame">
+            <img src="assets/desktop-board.png" width="1600" height="900" alt="Guodelist 桌面日历画板，月视图和当天任务" />
+          </div>
+          <div class="board-pill"><span></span> Always there, never in the way</div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="mobile-showcase" id="android">
+    <div class="wrap">
+      <div class="center-head">
+        <p class="kicker" style="justify-content:center">ANDROID</p>
+        <h2 class="h2 reveal">把同一份安静，<br><span class="soft">放进口袋。</span></h2>
+        <p class="lede reveal delay-1">手机不是桌面的缩小版。它应该在 10 秒内告诉你今天还剩什么，然后用最快的速度收好一个新任务。</p>
+      </div>
+
+      <div class="phone-stage">
+        <figure class="phone-item side reveal">
+          <div class="phone"><img src="assets/android-tasks.png" width="1080" height="1920" alt="Guodelist Android 所有任务页面" /></div>
+          <figcaption>All tasks</figcaption>
+        </figure>
+        <figure class="phone-item main reveal delay-1">
+          <div class="phone"><img src="assets/android-today.png" width="1080" height="1920" alt="Guodelist Android 今日页面" /></div>
+          <figcaption>Today</figcaption>
+        </figure>
+        <figure class="phone-item side reveal delay-2">
+          <div class="phone"><img src="assets/android-calendar.png" width="1080" height="1920" alt="Guodelist Android 日历页面" /></div>
+          <figcaption>Calendar</figcaption>
+        </figure>
+      </div>
+
+      <div class="mobile-notes">
+        <div class="mobile-note reveal"><span class="no">01</span><b>下拉，就同步</b><span>在任务和日历页直接下拉，不用去找设置。</span></div>
+        <div class="mobile-note reveal delay-1"><span class="no">02</span><b>通知，不打扰</b><span>按任务时间提醒，开关和提前量都由你决定。</span></div>
+        <div class="mobile-note reveal delay-2"><span class="no">03</span><b>桌面小组件</b><span>Today、Upcoming、Quick add，三种尺寸随手放。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="center-head">
+        <p class="kicker" style="justify-content:center">CRAFT</p>
+        <h2 class="h2 reveal">小地方，<span class="soft">也认真做。</span></h2>
+        <p class="lede reveal delay-1">没有隐藏的付费墙，也没有为了显得厉害而堆上去的功能。只有每天都会用到的那几个细节。</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature reveal">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg></span><span class="feature-no">01</span></div>
+          <h3>本地优先</h3>
+          <p>不登录也能用。数据先写在本机，断网、飞行模式、服务器维护，都不影响你今天要做的事。</p>
+        </article>
+        <article class="feature reveal delay-1">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7h10v10H7z"/><path d="M4 12a8 8 0 0 1 13.5-5.8M20 12a8 8 0 0 1-13.5 5.8"/><path d="M17 3v4h-4M7 21v-4h4"/></svg></span><span class="feature-no">02</span></div>
+          <h3>登录即同步</h3>
+          <p>按更新时间双向合并，后写者胜出。删除也有墓碑，过期的设备不会把旧任务带回来。</p>
+        </article>
+        <article class="feature reveal delay-2">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="feature-no">03</span></div>
+          <h3>任务即文档</h3>
+          <p>Markdown 即时渲染，支持子任务、附件、评论。报价单、会议记录、灵感，都挂在任务本身。</p>
+        </article>
+        <article class="feature reveal">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M17 15l3 3-3 3"/></svg></span><span class="feature-no">04</span></div>
+          <h3>重复任务</h3>
+          <p>每天、工作日、每周、每月。勾完自动滚出下一次，不用手动复制。</p>
+        </article>
+        <article class="feature dark reveal delay-1">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3a8.5 8.5 0 1 0 0 17c1.3 0 2-.8 2-1.8 0-1.5-1.6-1.9-1.6-3.4 0-1.2 1-2.1 2.5-2.1H17a4 4 0 0 0 4-4C21 5.5 17 3 12 3z"/><circle cx="7.5" cy="10" r="1"/><circle cx="10.5" cy="6.8" r="1"/><circle cx="14.5" cy="7" r="1"/><circle cx="17" cy="10.5" r="1"/></svg></span><span class="feature-no">05</span></div>
+          <h3>两套主题，明暗独立</h3>
+          <p>经典暖灰，或者星星人的奶油糖果色。桌面、手机、小组件使用同一套色彩语言。</p>
+        </article>
+        <article class="feature reveal delay-2">
+          <div class="feature-top"><span class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 9h16M8 13h3M8 16h6"/></svg></span><span class="feature-no">06</span></div>
+          <h3>桌面小组件</h3>
+          <p>Today、Upcoming、Quick add 三种小组件，把今天放在桌面上，抬手就能记。</p>
+        </article>
+      </div>
+
+      <div class="principles">
+        <div class="principle reveal"><span class="big">0</span><div><h3>没有账号，也能开始</h3><p>先写下第一件事。需要跨设备时再登录，不拿注册墙挡住你。</p></div></div>
+        <div class="principle reveal delay-1"><span class="big">2</span><div><h3>两个平台，一份数据</h3><p>Windows 和 Android 共用同一套同步协议，不用在两个应用里各维护一份。</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="download">
+    <div class="wrap">
+      <div class="download-panel">
+        <p class="kicker">GET GUODELIST</p>
+        <h2 class="h2 reveal">现在，把今天<br>收好。</h2>
+        <p class="lede reveal delay-1">下载即用。Windows 安装包约 3.5 MB，Android 约 11 MB。没有广告，没有订阅提醒，也没有「升级 Pro」的弹窗。</p>
+
+        <div class="platform-grid">
+          <a class="platform-card reveal" href="https://github.com/TankNee/guodelist/releases/latest" target="_blank" rel="noreferrer">
+            <div class="platform-top">
+              <span class="platform-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.6l7.4-1v7.1H3V5.6zm8.6-1.2L21 3v8.7h-9.4V4.4zM3 12.9h7.4v7.1L3 18.9v-6zm8.6 0H21V21l-9.4-1.3v-6.8z"/></svg></span>
+              <span class="platform-version">Windows · x64</span>
+            </div>
+            <h3>Windows</h3>
+            <p>Windows 10 / 11 · 原生 Tauri 应用<br>桌面画板、三栏任务、Markdown 笔记</p>
+            <span class="platform-link">下载安装包 <span class="arrow">↗</span></span>
+          </a>
+          <a class="platform-card reveal delay-1" href="https://github.com/TankNee/guodelist-android/releases/latest" target="_blank" rel="noreferrer">
+            <div class="platform-top">
+              <span class="platform-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M7.1 8.6h9.8c.6 0 1.1.5 1.1 1.1v6.8c0 .6-.5 1.1-1.1 1.1H7.1c-.6 0-1.1-.5-1.1-1.1v-6.8c0-.6.5-1.1 1.1-1.1zm-3.2.1c.7 0 1.2.5 1.2 1.2v4.8a1.2 1.2 0 0 1-2.4 0v-4.8c0-.7.5-1.2 1.2-1.2zm16.2 0c.7 0 1.2.5 1.2 1.2v4.8a1.2 1.2 0 0 1-2.4 0v-4.8c0-.7.5-1.2 1.2-1.2zM8.5 17.2h7v5.1a1.3 1.3 0 0 1-2.6 0v-3.4h-1.8v3.4a1.3 1.3 0 0 1-2.6 0v-5.1zM8.2 7.3l-.9-1.7c-.1-.2 0-.4.2-.5.2-.1.4 0 .5.2l.9 1.7c.8-.3 1.7-.5 2.7-.5s2 .2 2.8.5l.9-1.7c.1-.2.3-.3.5-.2.2.1.3.3.2.5l-.9 1.7c1.4.6 2.3 1.7 2.4 3H5.8c.1-1.3 1-2.4 2.4-3zM9.6 6.1a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2zm4.8 0a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2z"/></svg></span>
+              <span class="platform-version">Android · APK</span>
+            </div>
+            <h3>Android</h3>
+            <p>Android 8+ · 下拉刷新、通知提醒<br>桌面小组件、深色模式、离线可用</p>
+            <span class="platform-link">下载 APK <span class="arrow">↗</span></span>
+          </a>
+        </div>
+
+        <p class="download-note"><span>免费</span><i></i><span>开源</span><i></i><span>无广告</span><i></i><span>数据可导出</span></p>
+        <div class="source-row">
+          <a href="https://github.com/TankNee/guodelist" target="_blank" rel="noreferrer">桌面端源码 ↗</a>
+          <span class="sep"></span>
+          <a href="https://github.com/TankNee/guodelist-android" target="_blank" rel="noreferrer">Android 源码 ↗</a>
+          <span class="sep"></span>
+          <a href="https://github.com/TankNee/guodelist/releases" target="_blank" rel="noreferrer">更新日志 ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 3.8l3.3 7.1 7.8.9-5.8 5.3 1.6 7.8-6.9-4-6.9 4 1.6-7.8-5.8-5.3 7.8-.9z" fill="#fff6e8"/></svg></span>
+        Guodelist
+      </div>
+      <p style="margin:7px 0 0;font-size:11px;color:var(--muted)">把任务、笔记和日历，放回同一张画布。</p>
+    </div>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="#desktop">桌面端</a>
+      <a href="#android">Android</a>
+      <a href="#features">功能</a>
+      <a href="#download">下载</a>
+      <a href="https://github.com/TankNee/guodelist" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+    <div class="footer-note">
+      <span>© 2026 Guodelist. Made for calmer days.</span>
+      <span>Windows · Android · 本地优先 · 开源</span>
+    </div>
+  </div>
+</footer>
+
+<div class="film-modal" id="filmModal" aria-hidden="true">
+  <div class="film-backdrop" data-film-close></div>
+  <div class="film-dialog" role="dialog" aria-modal="true" aria-label="Guodelist 宣传片">
+    <button class="film-close" type="button" data-film-close aria-label="关闭宣传片">×</button>
+    <video id="filmVideo" controls playsinline preload="none" poster="https://guodelist.neeto.cn/media/guodelist-promo-poster.jpg?v=3">
+      <source src="https://guodelist.neeto.cn/media/guodelist-promo.mp4?v=3" type="video/mp4" />
+    </video>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const header = document.getElementById("siteHeader");
+    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const closeMenu = () => {
+      mobileMenu.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      menuToggle.setAttribute("aria-label", "打开菜单");
+    };
+    menuToggle.addEventListener("click", () => {
+      const open = mobileMenu.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(open));
+      menuToggle.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+    });
+    mobileMenu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMenu();
+    });
+
+    const filmModal = document.getElementById("filmModal");
+    const filmVideo = document.getElementById("filmVideo");
+    const filmClose = filmModal.querySelector(".film-close");
+    let filmLastFocus = null;
+
+    const openFilm = () => {
+      filmLastFocus = document.activeElement;
+      filmModal.classList.add("open");
+      filmModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("film-open");
+      filmVideo.currentTime = 0;
+      const played = filmVideo.play();
+      if (played && typeof played.catch === "function") played.catch(() => {});
+      filmClose.focus();
+    };
+    const closeFilm = () => {
+      if (!filmModal.classList.contains("open")) return;
+      filmVideo.pause();
+      filmVideo.currentTime = 0;
+      filmModal.classList.remove("open");
+      filmModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("film-open");
+      if (filmLastFocus && typeof filmLastFocus.focus === "function") filmLastFocus.focus();
+    };
+
+    document.querySelectorAll("[data-film-open]").forEach((trigger) => {
+      trigger.addEventListener("click", openFilm);
+    });
+    document.querySelectorAll("[data-film-close]").forEach((trigger) => {
+      trigger.addEventListener("click", closeFilm);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeFilm();
+    });
+
+    const reveal = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      reveal.forEach((el) => el.classList.add("in"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -7% 0px" });
+    reveal.forEach((el) => observer.observe(el));
+  })();
+</script>
+</body>
+</html>

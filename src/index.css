@@ -1,0 +1,418 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/instrument-sans";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Instrument Sans Variable", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei UI", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-app: var(--app);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-tint: var(--brand-tint);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+  --app: #ebe8e3;
+  --panel: #fffefc;
+  --panel-2: #f5f3ef;
+  --line: #e7e2da;
+  --line-strong: #d9d3c9;
+  --ink: #1c1a17;
+  --ink-2: #5f5a52;
+  --ink-3: #6d655b;
+  --brand: #e1543a;
+  --brand-ink: #b83b25;
+  --brand-tint: #fbeae5;
+
+  --background: var(--panel);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: #fffefc;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: #fbfaf8;
+  --secondary: var(--panel-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--panel-2);
+  --muted-foreground: var(--ink-2);
+  --accent: #efebe4;
+  --accent-foreground: var(--ink);
+  --destructive: #c8442f;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: #c9c2b7;
+  --radius: 0.75rem;
+  --sidebar: var(--app);
+  --sidebar-foreground: var(--ink);
+  --sidebar-accent: #e2ded7;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+}
+
+.dark {
+  --app: #121110;  --panel: #1a1917;
+  --panel-2: #211f1d;
+  --line: #2b2825;
+  --line-strong: #3a3632;
+  --ink: #f2efe9;
+  --ink-2: #b3aca2;
+  --ink-3: #9a938a;
+  --brand: #f2694c;
+  --brand-ink: #ff9078;
+  --brand-tint: #2e1c17;
+
+  --background: var(--panel);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: #201e1c;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: #191817;
+  --secondary: var(--panel-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--panel-2);
+  --muted-foreground: var(--ink-2);
+  --accent: #2a2724;
+  --accent-foreground: var(--ink);
+  --destructive: #e5674f;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: #4a443d;
+  --sidebar: var(--app);
+  --sidebar-foreground: var(--ink);
+  --sidebar-accent: #242220;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+}
+
+/* ---- Starry pack: soft cream + candy accents -------------------------- */
+:root[data-pack="starry"] {
+  --app: #fff5e6;
+  --panel: #fffdf7;
+  --panel-2: #fff2dc;
+  --line: #f1dfc1;
+  --line-strong: #e4c9a0;
+  --ink: #4a3623;
+  --ink-2: #7a6248;
+  --ink-3: #a18a6b;
+  --brand: #f2915f;
+  --brand-ink: #b8572f;
+  --brand-tint: #ffe8d5;
+  --sidebar-accent: #ffedd4;
+  --ring: #e4c9a0;
+}
+
+.dark[data-pack="starry"] {
+  --app: #251d2e;
+  --panel: #2f2539;
+  --panel-2: #3a2e46;
+  --line: #4a3b58;
+  --line-strong: #5d4a6d;
+  --ink: #f8efe3;
+  --ink-2: #d2c2b2;
+  --ink-3: #a2917f;
+  --brand: #ffb27a;
+  --brand-ink: #ffc99e;
+  --brand-tint: #43304a;
+  --sidebar-accent: #3a2b45;
+  --ring: #5d4a6d;
+}
+
+[data-pack="starry"] .starry-backdrop {
+  background:
+    radial-gradient(560px 360px at 10% 4%, rgba(255, 208, 236, 0.55), transparent 65%),
+    radial-gradient(620px 420px at 92% 10%, rgba(255, 240, 176, 0.6), transparent 62%),
+    radial-gradient(700px 480px at 72% 96%, rgba(196, 230, 255, 0.5), transparent 66%),
+    radial-gradient(420px 320px at 32% 78%, rgba(206, 245, 222, 0.45), transparent 70%);
+}
+
+.dark[data-pack="starry"] .starry-backdrop {
+  background:
+    radial-gradient(560px 360px at 10% 4%, rgba(120, 64, 110, 0.42), transparent 65%),
+    radial-gradient(620px 420px at 92% 10%, rgba(124, 94, 44, 0.42), transparent 62%),
+    radial-gradient(700px 480px at 72% 96%, rgba(52, 84, 120, 0.42), transparent 66%),
+    radial-gradient(420px 320px at 32% 78%, rgba(54, 96, 78, 0.4), transparent 70%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-app text-ink font-sans antialiased;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The desktop widget lives on a transparent, frameless window. */
+  html.widget-window,
+  html.widget-window body {
+    background: transparent !important;
+    overflow: hidden;
+  }
+
+  /* The window chrome is ours: no text selection unless the user is typing. */
+  body {
+    user-select: none;
+    cursor: default;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    user-select: text;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--brand) 22%, transparent);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--brand) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--ink) 14%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--ink) 24%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+@layer utilities {
+  .drag-region {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+
+  .no-drag {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+
+  .panel-shadow {
+    box-shadow:
+      0 1px 1px rgba(28, 26, 23, 0.03),
+      0 12px 32px -20px rgba(28, 26, 23, 0.28);
+  }
+
+  .pop-shadow {
+    box-shadow:
+      0 1px 2px rgba(28, 26, 23, 0.06),
+      0 10px 30px -12px rgba(28, 26, 23, 0.22);
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .panel-in {
+    animation: panel-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* WYSIWYG notes (Tiptap) */
+.rich-text {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  min-height: 84px;
+  word-break: break-word;
+}
+
+.rich-text > * + * {
+  margin-top: 0.5em;
+}
+
+.rich-text p + p {
+  margin-top: 0.7em;
+}
+
+.rich-text p {
+  margin: 0;
+}
+
+.rich-text h1,
+.rich-text h2,
+.rich-text h3 {
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.35;
+}
+
+.rich-text h1 {
+  font-size: 17px;
+}
+.rich-text h2 {
+  font-size: 15.5px;
+}
+.rich-text h3 {
+  font-size: 14.5px;
+}
+
+.rich-text ul,
+.rich-text ol {
+  padding-left: 1.2em;
+  margin: 0.2em 0;
+}
+
+.rich-text ul {
+  list-style: disc;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text li {
+  margin: 0.12em 0;
+}
+
+.rich-text blockquote {
+  border-left: 2px solid var(--line-strong);
+  padding-left: 0.7em;
+  color: var(--ink-3);
+}
+
+.rich-text code {
+  font-family: ui-monospace, "SFMono-Regular", "Cascadia Mono", monospace;
+  font-size: 0.92em;
+  background: var(--panel-2);
+  padding: 0.08em 0.32em;
+  border-radius: 4px;
+}
+
+.rich-text pre {
+  background: var(--panel-2);
+  padding: 0.6em 0.7em;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.rich-text pre code {
+  background: none;
+  padding: 0;
+}
+
+.rich-text a {
+  color: var(--brand-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rich-text ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.rich-text ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.rich-text ul[data-type="taskList"] li > label {
+  margin-top: 0.2em;
+}
+
+.rich-text input[type="checkbox"] {
+  accent-color: var(--brand);
+  width: 13px;
+  height: 13px;
+}
+
+.rich-text p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--ink-3);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.rich-text .ProseMirror:focus {
+  outline: none;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
