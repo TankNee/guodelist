@@ -1,0 +1,27 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Rust / Tauri
+src-tauri/target
+src-tauri/gen
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local screenshots
+.shots
+
+# Test output
+coverage/
+
+data/
+server/data/
